@@ -10,4 +10,7 @@
 !/.idea/ublock-discord.iml
 !/.idea/vcs.xml
 !/.idea/jsonSchemas.xml
+# esbuild output
 /dist/
+# tsc output
+/out/

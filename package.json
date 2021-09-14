@@ -1,18 +1,12 @@
 {
   "name": "ublock-discord",
   "version": "0.0.0",
-  "files": [
-    "dist",
-    "src"
-  ],
   "scripts": {
     "lint:check": "eslint src --ext .ts",
     "lint:fix": "npm run lint:check -- --fix",
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
-    "build": "rimraf ./dist && tsc",
-    "load-plugin": "node load-plugin",
-    "build-and-load-plugin": "npm run build && npm run load-plugin",
+    "build": " tsc && node out/src/scripts/build",
     "postinstall": "patch-package"
   },
   "keywords": [],
@@ -23,20 +17,26 @@
     "url": "https://github.com/DetachHead/ublock-discord.git"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.172",
     "@typescript-eslint/eslint-plugin": "^4.13.0",
     "@typescript-eslint/parser": "^4.13.0",
+    "electron": "^14.0.1",
     "eslint": "^7.17.0",
     "eslint-config-prettier": "^7.1.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "prettier": "2.2.1",
-    "rimraf": "^3.0.2",
     "source-map-support": "^0.5.19",
     "typed-nodejs-assert": "^1.1.0",
-    "typescript": "^4.4.0-beta"
+    "typescript": "^4.4.0-beta",
+    "utility-types": "^3.10.0"
   },
   "dependencies": {
     "@types/bandagedbd__bdapi": "^0.3.1",
+    "@types/node": "^16.9.1",
+    "asar": "^3.1.0",
+    "esbuild": "^0.12.28",
+    "lodash": "^4.17.21",
     "patch-package": "^6.4.7"
   }
 }
