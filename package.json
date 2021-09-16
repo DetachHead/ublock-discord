@@ -2,11 +2,11 @@
   "name": "ublock-discord",
   "version": "0.0.0",
   "scripts": {
-    "lint:check": "eslint src --ext .ts",
+    "lint:check": "eslint injector --ext .ts",
     "lint:fix": "npm run lint:check -- --fix",
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
-    "build": " tsc && node out/src/scripts/build",
+    "build": "rimraf ./out && tsc && node -r source-map-support/register out/scripts/src/build",
     "postinstall": "patch-package"
   },
   "keywords": [],
@@ -21,17 +21,20 @@
     "@typescript-eslint/eslint-plugin": "^4.13.0",
     "@typescript-eslint/parser": "^4.13.0",
     "electron": "^14.0.1",
+    "esbuild-plugin-inline-import": "^1.0.1",
+    "esbuild-plugin-text-replace": "^1.1.3",
     "eslint": "^7.17.0",
     "eslint-config-prettier": "^7.1.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "prettier": "2.2.1",
+    "rimraf": "^3.0.2",
     "source-map-support": "^0.5.19",
     "typed-nodejs-assert": "^1.1.0",
-    "typescript": "^4.4.0-beta",
-    "utility-types": "^3.10.0"
+    "typescript": "^4.4.0-beta"
   },
   "dependencies": {
+    "@cliqz/adblocker-electron": "^1.22.5",
     "@types/bandagedbd__bdapi": "^0.3.1",
     "@types/node": "^16.9.1",
     "asar": "^3.1.0",

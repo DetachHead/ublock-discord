@@ -1,27 +1,10 @@
 import path from 'path'
 import { tmpdir } from 'os'
 import { createPackage, extractAll } from 'asar'
-import { readFileSync, writeFileSync } from 'fs'
-import Electron from 'electron'
+import { readFile, writeFile } from 'fs/promises'
 import { getEnvVariable, promptRelaunchDiscord } from './utils'
 
-export type InjectorFunction = (modules: { electron: typeof Electron; path: typeof path }) => void
-
-const patchRegex = /\/\* discord-ublock patch \*\/.*\/\* end patch \*\//
-
-/**
- bundled injector js be like:
- ```
- const s = require('path')
- var n = e.n(s)
- const t = require('electron')
- var r = e.n(t)
- const o = require('module')
- ```
- */
-const getAppendedCode = (fn: InjectorFunction) =>
-    // language=js
-    `/* discord-ublock patch */ (${fn})({ electron: t, path: s }); /* end patch */`
+const patchRegex = /\/\* discord-ublock patch \*\/(.|\n)*\/\* end patch \*\//
 
 const withExtractedAsar = async (fn: (path: string) => void) => {
     const asarPath = path.join(
@@ -31,21 +14,24 @@ const withExtractedAsar = async (fn: (path: string) => void) => {
     )
     const extractedAsarPath = path.join(tmpdir(), 'betterdiscordPatch')
     extractAll(asarPath, extractedAsarPath)
-    fn(extractedAsarPath)
+    await fn(extractedAsarPath)
     await createPackage(extractedAsarPath, asarPath)
 }
 
-export const patchBetterDiscordAsar = async (restartMessage: string, fn: InjectorFunction) => {
-    await withExtractedAsar((extractedAsarPath) => {
+export const patchBetterDiscordAsar = async (restartMessage: string, code: string) => {
+    await withExtractedAsar(async (extractedAsarPath) => {
         const injectorPath = path.join(extractedAsarPath, 'injector.js')
-        const injectorCode = readFileSync(injectorPath, 'utf8')
-        const appendedCode = getAppendedCode(fn)
+        const injectorCode = await readFile(injectorPath, 'utf8')
+        const appendedCode =
+            // language=js
+            `/* discord-ublock patch */ ${code}; /* end patch */`
         if (injectorCode.includes(appendedCode)) {
+            // TODO: backup the file instead, this method seems to make it double patch and mess up the file
             console.log("function already added. removing (in case it's been updated)")
-            writeFileSync(injectorPath, injectorCode.replace(patchRegex, appendedCode))
+            await writeFile(injectorPath, injectorCode.replace(patchRegex, appendedCode))
         } else {
             const endOfCode = '})();'
-            writeFileSync(
+            await writeFile(
                 injectorPath,
                 injectorCode.replace(
                     new RegExp(_.escapeRegExp(endOfCode) + '$'),
@@ -57,9 +43,9 @@ export const patchBetterDiscordAsar = async (restartMessage: string, fn: Injecto
     })
 }
 
-const replacePatchFromInjectJsFile = (injectorPath: string, replaceWith: string) => {
-    const text = readFileSync(injectorPath, 'utf8')
-    writeFileSync(injectorPath, text.replace(patchRegex, replaceWith))
+const replacePatchFromInjectJsFile = async (injectorPath: string, replaceWith: string) => {
+    const text = await readFile(injectorPath, 'utf8')
+    await writeFile(injectorPath, text.replace(patchRegex, replaceWith))
 }
 
 export const removePatchFromBetterDiscordAsar = async (restartMessage: string) => {

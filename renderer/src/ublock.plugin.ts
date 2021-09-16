@@ -1,5 +1,4 @@
 import { BdPlugin } from '@bandagedbd/bdapi'
-import { getEnvVariable } from './utils'
 import { patchBetterDiscordAsar, removePatchFromBetterDiscordAsar } from './asar-patcher'
 
 export default class UblockPlugin implements BdPlugin {
@@ -11,15 +10,8 @@ export default class UblockPlugin implements BdPlugin {
     start = () =>
         patchBetterDiscordAsar(
             'ublock extension injected into betterdiscord',
-            async ({ electron, path }) => {
-                await electron.session.defaultSession.loadExtension(
-                    // TODO: unhardcode
-                    path.join(
-                        getEnvVariable('LOCALAPPDATA'),
-                        'Microsoft\\Edge\\User Data\\Default\\Extensions\\cjpalhdlnbpafiamejdnhcphjbkeiagm\\1.37.2_24',
-                    ),
-                )
-            },
+            // eslint-disable-next-line @typescript-eslint/no-var-requires -- import doesn't exist at compiletime, gets inlined when bundled
+            require('inline:../../../dist/injector.js'),
         )
     stop = () => removePatchFromBetterDiscordAsar('ublock extension removed from betterdiscord')
 }
